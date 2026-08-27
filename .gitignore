@@ -1,2 +1,4 @@
-justfile
 bin/
+*.class
+.idea/
+.vscode/

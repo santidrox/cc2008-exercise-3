@@ -1,20 +1,28 @@
-# CC2008 Object Oriented Programming - Exercise 3
+# CC2008 - Ejercicio 3: Editor de filtros de imágenes
 
-We will learn a lot this week: we will create a graphical (GUI) application to work with the image filters we created last week. We will also learn about dynamic lists and handling errors with exceptions.
+Aplicación de escritorio en Java Swing organizada con el patrón MVC. Permite abrir una imagen, aplicar filtros de forma consecutiva, consultar el historial, deshacer, reiniciar y guardar el resultado.
 
-### Commands
+## Requisitos
 
-To compile this program, which uses an external JAR file, the command we use is: 
+- JDK 11 o superior.
+- La librería FlatLaf incluida en `lib/`.
+
+## Compilar
+
 ```bash
-javac -cp lib/*.jar -d bin src/*.java
+javac -cp "lib/*" -d bin src/*.java
 ```
 
-To run the application in Windows:
+## Ejecutar
+
+Windows:
+
 ```bash
 java -cp "bin;lib/*" Main
 ```
 
-To run in Linux/MacOS:
+Linux o macOS:
+
 ```bash
 java -cp "bin:lib/*" Main
 ```
