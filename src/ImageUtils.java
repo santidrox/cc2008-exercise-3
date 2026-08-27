@@ -3,71 +3,52 @@ import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 
-public class ImageUtils {
-    public static Image load(String filename) {
-        try {
-            BufferedImage img = ImageIO.read(new File(filename));
-            if (img == null) {
-                return null;
-            }
+public final class ImageUtils {
+    private ImageUtils() {
+    }
 
-            int height = img.getHeight();
-            int width = img.getWidth();
-
-            // Create pixel matrix here with appropiate dimensions.
-            Pixel[][] pixels = new Pixel[height][width];
-
-            // loop over BufferedImage
-            for (int row = 0; row < height; row++) {
-                for (int col = 0; col < width; col++) {
-                    int packed = img.getRGB(col, row);
-                    int r = (packed >> 16) & 0xFF;
-                    int g = (packed >> 8) & 0xFF;
-                    int b = packed & 0xFF;
-                    pixels[row][col] = new Pixel(r, g, b);
-                }
-            }
-
-            return new Image(pixels);
-        } catch (IOException e) {
-            System.out.println("Couldn't open image at: '" + filename + "': " + e.getMessage());
-            return null;
+    public static Image load(String filename) throws IOException, InvalidImageFormatException {
+        BufferedImage bufferedImage = ImageIO.read(new File(filename));
+        if (bufferedImage == null) {
+            throw new InvalidImageFormatException(
+                    "El archivo seleccionado no contiene una imagen válida.");
         }
+
+        Pixel[][] pixels = new Pixel[bufferedImage.getHeight()][bufferedImage.getWidth()];
+        for (int row = 0; row < bufferedImage.getHeight(); row++) {
+            for (int col = 0; col < bufferedImage.getWidth(); col++) {
+                int rgb = bufferedImage.getRGB(col, row);
+                pixels[row][col] = new Pixel(
+                        (rgb >> 16) & 0xFF,
+                        (rgb >> 8) & 0xFF,
+                        rgb & 0xFF);
+            }
+        }
+        return new Image(pixels);
     }
 
     public static void save(Image image, String filename) throws IOException {
-        BufferedImage img = toBufferedImage(image);
-
-        File file = new File(filename);
-        if (file.getParentFile() != null) {
-            file.getParentFile().mkdirs();
+        String format = extensionOf(filename);
+        if (!ImageIO.write(toBufferedImage(image), format, new File(filename))) {
+            throw new IOException("No existe un escritor para el formato " + format + ".");
         }
-
-        String format = "png";
-        int dot = filename.lastIndexOf('.');
-        if (dot != -1 && dot < filename.length() - 1) {
-            format = filename.substring(dot + 1).toLowerCase();
-        }
-
-        ImageIO.write(img, format, file);
     }
 
     public static BufferedImage toBufferedImage(Image image) {
-        int height = image.getHeight();
-        int width = image.getWidth();
-
-        BufferedImage output = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        for (int row = 0; row < height; row++) {
-            for (int col = 0; col < width; col++) {
-                Pixel pixel = image.getPixel(row, col);
-
-                int r = pixel.r & 0xFF;
-                int g = pixel.g & 0xFF;
-                int b = pixel.b & 0xFF;
-                output.setRGB(col, row, (r << 16) | (g << 8) | b);
+        BufferedImage output = new BufferedImage(
+                image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+        for (int row = 0; row < image.getHeight(); row++) {
+            for (int col = 0; col < image.getWidth(); col++) {
+                Pixel p = image.getPixel(row, col);
+                int rgb = (p.getRed() << 16) | (p.getGreen() << 8) | p.getBlue();
+                output.setRGB(col, row, rgb);
             }
         }
-
         return output;
+    }
+
+    private static String extensionOf(String filename) {
+        int dot = filename.lastIndexOf('.');
+        return dot < 0 ? "png" : filename.substring(dot + 1).toLowerCase();
     }
 }
